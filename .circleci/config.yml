@@ -85,7 +85,7 @@ jobs:
           when: always
 
 workflows:
-  build_and_test:
+  build:
     jobs:
       - build
       - build_dockerfile
