@@ -75,3 +75,17 @@ jobs:
             export PYTHONPATH=${PYTHONPATH}:$(pwd)/lib && source venv/bin/activate
             python3 mrobpy/tests/PC_align.py
           when: always
+  build_dockerfile:
+    machine: true
+    steps:
+      - checkout  
+      - run:
+          name: "Build Dockerfile"
+          command: docker build .
+          when: always
+
+workflows:
+  build_and_test:
+    jobs:
+      - build
+      - build_dockerfile
