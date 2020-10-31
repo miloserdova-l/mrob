@@ -1,30 +1,47 @@
 FROM centos:7
 
-RUN yum install -y git
-RUN yum groupinstall -y "Development Tools"
-RUN yum install -y wget
-RUN wget https://cmake.org/files/v3.6/cmake-3.6.2.tar.gz
-RUN tar -zxvf cmake-3.6.2.tar.gz
+RUN yum install -y git && \
+	yum groupinstall -y "Development Tools" && \
+	yum install -y wget && \
+	yum install -y python3 && \
+    yum install -y epel-release && \
+    yum install -y python36-distutils-extra && \
+    yum install -y python36-devel && \
+    python3 -m pip install --user --upgrade pip && \
+    python3 -m pip install --user numpy && \
+    python3 -m pip install -q pep517 && \
+    yum clean all
+    
+
+RUN wget https://cmake.org/files/v3.6/cmake-3.6.2.tar.gz && \
+    tar -zxvf cmake-3.6.2.tar.gz
 WORKDIR /cmake-3.6.2
-RUN ./bootstrap --prefix=/usr/local
-RUN gmake
-RUN make
-RUN make install
+RUN ./bootstrap --prefix=/usr/local && \
+    make && \
+    make install
+    
 WORKDIR /root
-RUN yum install -y python3
-RUN yum install -y epel-release
-RUN yum install -y python36-distutils-extra
-RUN yum install -y python36-devel
 RUN mkdir soft
 WORKDIR /root/soft
 RUN git clone --recursive https://github.com/miloserdova-l/mrob
 WORKDIR /root/soft/mrob
-RUN git submodule update --recursive
-RUN mkdir build
-WORKDIR /root/soft/mrob/build
-RUN cmake ..
-RUN make -j
-RUN echo export PYTHONPATH=\"/root/soft/mrob/lib\" >> ~/.bashrc
-RUN source ~/.bashrc
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install --user numpy
+RUN git submodule update --recursive && \
+    mkdir build
+WORKDIR /root/soft/mrob/build 
+RUN cmake .. && \
+	make -j4
+
+WORKDIR /root/soft
+RUN mkdir wheel && \
+	cp -a ./mrob/lib ./wheel/mrob
+WORKDIR /root/soft/wheel/mrob	
+RUN touch __init__.py && \
+	chmod +x __init__.py && \
+	echo "#TODO" > __init__.py 
+	
+ADD pyproject.toml /root/soft/wheel/pyproject.toml
+ADD setup.cfg /root/soft/wheel/setup.cfg
+WORKDIR /root/soft/wheel
+RUN mkdir dist && \
+	python3 -m pep517.build . && \
+	python3 -m pip install ./dist/mrob-0.0.1-py3-none-any.whl
