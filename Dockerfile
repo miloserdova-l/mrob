@@ -33,6 +33,8 @@ RUN cmake .. \
 
 RUN mkdir /root/soft/wheel \
  && cp -a /root/soft/mrob/lib /root/soft/wheel/mrob \
+ && cp /root/soft/mrob/README.md /root/soft/wheel/README.md \
+ && cp /root/soft/mrob/LICENSE /root/soft/wheel/LICENSE \
  && chrpath -r '$ORIGIN' /root/soft/wheel/mrob/mrob.cpython-36m-x86_64-linux-gnu.so
 
 ADD __init__.py /root/soft/wheel/mrob/__init__.py
