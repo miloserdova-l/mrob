@@ -75,17 +75,23 @@ jobs:
             export PYTHONPATH=${PYTHONPATH}:$(pwd)/lib && source venv/bin/activate
             python3 mrobpy/tests/PC_align.py
           when: always
-  build_dockerfile:
+  build_and_save_wheel:
     machine: true
     steps:
       - checkout  
       - run:
           name: "Build Dockerfile"
-          command: docker build .
+          command: docker build . --tag build-wheel
           when: always
+      - run:
+          name: "Save wheel"
+          command: docker cp $(docker create --rm build-wheel):/root/soft/wheel/dist ~/artifacts
+          when: always
+      - store_artifacts:
+          path: ~/artifacts
 
 workflows:
-  build:
+  build_and_test:
     jobs:
       - build
-      - build_dockerfile
+      - build_and_save_wheel
