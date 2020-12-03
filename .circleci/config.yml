@@ -75,7 +75,7 @@ jobs:
             export PYTHONPATH=${PYTHONPATH}:$(pwd)/lib && source venv/bin/activate
             python3 mrobpy/tests/PC_align.py
           when: always
-build-and-save-wheel:
+  build-and-save-wheel:
     machine: true
     steps:
       - checkout  
