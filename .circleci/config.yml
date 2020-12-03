@@ -75,7 +75,7 @@ jobs:
             export PYTHONPATH=${PYTHONPATH}:$(pwd)/lib && source venv/bin/activate
             python3 mrobpy/tests/PC_align.py
           when: always
-  build_and_save_wheel:
+build-and-save-wheel:
     machine: true
     steps:
       - checkout  
@@ -89,9 +89,34 @@ jobs:
           when: always
       - store_artifacts:
           path: ~/artifacts
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - artifacts
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+              VERSION=v$(ls ~/artifacts/*.whl | awk -F"-" '{ print $2 }')
+              ghr -t "${GITHUB_TOKEN}" \
+                  -u "${CIRCLE_PROJECT_USERNAME}" \
+                  -r "${CIRCLE_PROJECT_REPONAME}" \
+                  -c "${CIRCLE_SHA1}" \
+                  -delete \
+                  ${VERSION} ~/artifacts/
+          when: always
 
 workflows:
-  build_and_test:
+  build-and-test:
     jobs:
       - build
-      - build_and_save_wheel
+      - build-and-save-wheel
+      - publish-github-release:
+          requires:
+            - build-and-save-wheel
+            
