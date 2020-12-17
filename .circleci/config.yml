@@ -75,17 +75,33 @@ jobs:
             export PYTHONPATH=${PYTHONPATH}:$(pwd)/lib && source venv/bin/activate
             python3 mrobpy/tests/PC_align.py
           when: always
-  build-and-save-wheel:
-    machine: true
+  build-docker-image:
+    machine: true 
     steps:
       - checkout  
       - run:
-          name: "Build Dockerfile"
-          command: docker build . --tag build-wheel
+          name: "Push to DockerHub"
+          command: |
+             docker build . --tag miloserdoval/building-wheel-manylinux
+             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+             docker push $DOCKER_USERNAME/building-wheel-manylinux
+          when: always
+  build-wheel:
+    docker:
+      - image: miloserdoval/building-wheel-manylinux
+    steps:
+      - checkout  
+      - run:
+          name: "Clone"
+          command: /bin/bash ./scripts/clone-mrob.sh
           when: always
       - run:
-          name: "Save wheel"
-          command: docker cp $(docker create --rm build-wheel):/root/soft/wheel/dist ~/artifacts
+          name: "Build"
+          command: /bin/bash ./scripts/build-wheels.sh
+          when: always
+      - run:
+          name: "Save"
+          command: cp -a ~/soft/wheel/dist ~/artifacts
           when: always
       - store_artifacts:
           path: ~/artifacts
@@ -112,11 +128,14 @@ jobs:
           when: always
 
 workflows:
-  build-and-test:
+  build_and_test:
     jobs:
       - build
-      - build-and-save-wheel
+      - build-docker-image
+      - build-wheel:
+          requires:
+            - build-docker-image
       - publish-github-release:
           requires:
-            - build-and-save-wheel
+            - build-wheel
             

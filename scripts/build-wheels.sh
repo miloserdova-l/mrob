@@ -2,8 +2,14 @@
 
 LATEST=""
 
+mkdir -p ~/soft/wheel/mrob
+mkdir ~/soft/wheel/dist
+
 cp ~/soft/mrob/README.md ~/soft/wheel/README.md 
 cp ~/soft/mrob/LICENSE ~/soft/wheel/LICENSE
+cp ~/soft/mrob/__init__.py ~/soft/wheel/mrob/__init__.py 
+cp ~/soft/mrob/pyproject.toml ~/soft/wheel/pyproject.toml
+cp ~/soft/mrob/setup.cfg ~/soft/wheel/setup.cfg
 
 for PYBIN in /opt/python/cp3*/bin/
 do
