@@ -82,18 +82,23 @@ jobs:
       - run:
           name: "Push to DockerHub"
           command: |
-             docker build . --tag miloserdoval/building-wheel-manylinux
+             docker build . --tag $DOCKER_USERNAME/building-wheel-manylinux
              echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
              docker push $DOCKER_USERNAME/building-wheel-manylinux
           when: always
   build-wheel:
     docker:
-      - image: miloserdoval/building-wheel-manylinux
+      - image: $DOCKER_USERNAME/building-wheel-manylinux
     steps:
       - checkout  
       - run:
           name: "Clone"
-          command: /bin/bash ./scripts/clone-mrob.sh
+          command: |
+             mkdir -p ~/soft/mrob
+             cp -a . ~/soft/mrob
+             mkdir ~/soft/mrob/build
+             cd ~/soft/mrob
+             git submodule update --init --recursive
           when: always
       - run:
           name: "Build"
