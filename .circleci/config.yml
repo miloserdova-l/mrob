@@ -89,16 +89,14 @@ jobs:
   build-wheel:
     docker:
       - image: $DOCKER_USERNAME/building-wheel-manylinux
+    working_directory: /root/soft/mrob
     steps:
       - checkout  
       - run:
           name: "Clone"
           command: |
-             mkdir -p ~/soft/mrob
-             cp -a . ~/soft/mrob
-             mkdir ~/soft/mrob/build
-             cd ~/soft/mrob
              git submodule update --init --recursive
+             mkdir ~/soft/mrob/build
           when: always
       - run:
           name: "Build"
@@ -136,7 +134,9 @@ workflows:
   build_and_test:
     jobs:
       - build
-      - build-docker-image
+      - build-docker-image:
+          requires:
+            - build
       - build-wheel:
           requires:
             - build-docker-image
