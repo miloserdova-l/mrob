@@ -89,29 +89,26 @@ jobs:
   build-wheel:
     docker:
       - image: $DOCKER_USERNAME/building-wheel-manylinux
-    working_directory: /root/soft/mrob
     steps:
       - checkout  
       - run:
           name: "Clone"
           command: |
              git submodule update --init --recursive
-             mkdir ~/soft/mrob/build
           when: always
       - run:
           name: "Build"
-          command: /bin/bash ./scripts/build-wheels.sh
-          when: always
-      - run:
-          name: "Save"
-          command: cp -a ~/soft/wheel/dist ~/artifacts
+          command: |
+             chmod +x ./scripts/build-wheels.sh
+             ./scripts/build-wheels.sh
           when: always
       - store_artifacts:
-          path: ~/artifacts
+          path: /root/project/dist
+          destination: ~/artifacts
       - persist_to_workspace:
           root: ~/
           paths:
-            - artifacts
+            - project/dist
   publish-github-release:
     docker:
       - image: cibuilds/github:0.10
@@ -121,13 +118,13 @@ jobs:
       - run:
           name: "Publish Release on GitHub"
           command: |
-              VERSION=v$(ls ~/artifacts/*.whl | awk -F"-" '{ print $2 }')
+              VERSION=v$(ls ~/project/dist/*.whl | awk -F"-" '{ print $2 }')
               ghr -t "${GITHUB_TOKEN}" \
                   -u "${CIRCLE_PROJECT_USERNAME}" \
                   -r "${CIRCLE_PROJECT_REPONAME}" \
                   -c "${CIRCLE_SHA1}" \
                   -delete \
-                  ${VERSION} ~/artifacts/
+                  ${VERSION} ~/project/dist/*.whl
           when: always
 
 workflows:
