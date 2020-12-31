@@ -98,9 +98,7 @@ jobs:
           when: always
       - run:
           name: "Build"
-          command: |
-             chmod +x ./scripts/build-wheels.sh
-             ./scripts/build-wheels.sh
+          command: ./scripts/build-wheels.sh
           when: always
       - store_artifacts:
           path: /root/project/dist
