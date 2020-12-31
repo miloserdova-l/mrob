@@ -1,7 +1,11 @@
 #!/bin/bash
+set -euo pipefail
+export LC_ALL=C
 
 LATEST=""
 
+cd $(dirname $(readlink -f "${BASH_SOURCE[0]}"))
+cd ../ 
 
 mkdir ./build
 mkdir ./dist
@@ -26,4 +30,5 @@ done
 chrpath -r '$ORIGIN' ../mrob/mrob.*.so
 ${LATEST}python3 -m pip install --user -q pep517
 ${LATEST}python3 -m pep517.build ../
+auditwheel repair ../dist/*.whl
 
