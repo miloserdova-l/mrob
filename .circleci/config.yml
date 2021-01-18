@@ -77,18 +77,20 @@ jobs:
           when: always
   build-wheel:
     docker:
-      - image: miloserdoval/building-wheel-manylinux
+      - image: quay.io/pypa/manylinux2010_x86_64
     steps:
       - checkout  
       - run:
-          name: "Clone"
+          name: "Install fresh CMake into ManyLinux container"
+          command: env pybin=$(LANG=C ls /opt/python/cp3*/bin | tail -n 1) bash -c '$pybin/python -m pip install cmake && mkdir -p /usr/local/bin && ln -svf $pybin/cmake /usr/local/bin/cmake'
+      - run:
+          name: "Clone submodules"
           command: |
              git submodule update --init --recursive
-          when: always
       - run:
-          name: "Build"
-          command: ./scripts/build-wheels.sh
-          when: always
+      - run:
+          name: "Build Python wheels"
+          command: scripts/build-wheels.sh
       - store_artifacts:
           path: /root/project/build/wheelhouse
           destination: ~/artifacts
@@ -112,7 +114,6 @@ jobs:
                   -c "${CIRCLE_SHA1}" \
                   -delete \
                   ${VERSION} ~/project/build/wheelhouse/*.whl
-          when: always
 
 workflows:
   build_and_test:
@@ -124,4 +125,8 @@ workflows:
       - publish-github-release:
           requires:
             - build-wheel
-            
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^.+$/
