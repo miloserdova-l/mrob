@@ -79,15 +79,18 @@ jobs:
     docker:
       - image: quay.io/pypa/manylinux2010_x86_64
     steps:
-      - checkout  
+      - checkout
       - run:
           name: "Install fresh CMake into ManyLinux container"
-          command: env pybin=$(LANG=C ls /opt/python/cp3*/bin | tail -n 1) bash -c '$pybin/python -m pip install cmake && mkdir -p /usr/local/bin && ln -svf $pybin/cmake /usr/local/bin/cmake'
+          command: |
+            env pybin=$(LANG=C ls -d1r /opt/python/cp3*/bin | head -n 1) bash -c '$pybin/python -m pip install cmake && mkdir -p /usr/local/bin && ln -svf $pybin/cmake /usr/local/bin/cmake'
+            cmake --version
       - run:
           name: "Clone submodules"
-          command: |
-             git submodule update --init --recursive
+          command: git submodule update --init --recursive
       - run:
+          name: "Install additional utils"
+          command: yum install -y chrpath
       - run:
           name: "Build Python wheels"
           command: scripts/build-wheels.sh
@@ -115,18 +118,23 @@ jobs:
                   -delete \
                   ${VERSION} ~/project/build/wheelhouse/*.whl
 
+# https://circleci.com/docs/2.0/configuration-reference/#filters-1
+filter-forall-tags: &all-tags
+  tags:
+    only: /.*/ # run for tags too, otherwise for branches only
+
 workflows:
   build_and_test:
     jobs:
-      - build
+      - build:
+          filters: *all-tags
       - build-wheel:
-          requires:
-            - build
+          filters: *all-tags
       - publish-github-release:
           requires:
+            - build
             - build-wheel
           filters:
+            <<: *all-tags
             branches:
-              ignore: /.*/
-            tags:
-              only: /^.+$/
+              ignore: /.*/ # publish to GHR  only tagged commits
