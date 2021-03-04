@@ -75,6 +75,13 @@ jobs:
           name: "Install additional utils"
           command: yum install -y chrpath
       - run:
+          name: "Debug step"
+          command: |
+            git status || :
+            git diff || :
+            ls -la src/common/mrob/optimizer.hpp || :
+            cat src/common/mrob/optimizer.hpp || :
+      - run:
           name: "Build Python wheels"
           command: scripts/build-wheels.sh
       - store_artifacts:
@@ -109,9 +116,11 @@ jobs:
       - run:
           name: Upload to PyPI
           command: |
-              echo -e "[pypi]" >> ~/.pypirc
-              echo -e "username = __token__" >> ~/.pypirc
-              echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+              cat >> ~/.pypirc \<< EOD
+              [pypi]
+              username = __token__
+              password = $PYPI_PASSWORD
+              EOD
               python3 -m pip install --user --upgrade twine
               twine upload ~/project/build/wheelhouse/*.whl
 
