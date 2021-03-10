@@ -64,44 +64,16 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Debug step"
-          command: |
-            git status || :
-            git --no-pager diff || :
-            ls -la src/common/mrob/optimizer.hpp || :
-            cat src/common/mrob/optimizer.hpp || :
-      - run:
           name: "Install fresh CMake into ManyLinux container"
           command: |
             env pybin=$(LANG=C ls -d1r /opt/python/cp3*/bin | head -n 1) bash -c '$pybin/python -m pip install cmake && mkdir -p /usr/local/bin && ln -svf $pybin/cmake /usr/local/bin/cmake'
             cmake --version
       - run:
-          name: "Debug step"
-          command: |
-            git status || :
-            git --no-pager diff || :
-            ls -la src/common/mrob/optimizer.hpp || :
-            cat src/common/mrob/optimizer.hpp || :
-      - run:
           name: "Clone submodules"
           command: git submodule update --init --recursive
       - run:
-          name: "Debug step"
-          command: |
-            git status || :
-            git --no-pager diff || :
-            ls -la src/common/mrob/optimizer.hpp || :
-            cat src/common/mrob/optimizer.hpp || :
-      - run:
           name: "Install additional utils"
           command: yum install -y chrpath
-      - run:
-          name: "Debug step"
-          command: |
-            git status || :
-            git --no-pager diff || :
-            ls -la src/common/mrob/optimizer.hpp || :
-            cat src/common/mrob/optimizer.hpp || :
       - run:
           name: "Build Python wheels"
           command: scripts/build-wheels.sh
