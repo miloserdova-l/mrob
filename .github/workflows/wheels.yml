@@ -1,0 +1,23 @@
+name: Build macOS wheels
+
+on: [push, pull_request]
+
+jobs:
+  build_wheel:
+    name: Build wheel on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-10.14]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install packages
+        run: brew install coreutils
+      - name: Build wheel
+        run: sudo ./scripts/build-wheels-macOS.sh
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./dist/mrob*.whl

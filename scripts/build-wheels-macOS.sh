@@ -13,34 +13,39 @@
 #  limitations under the License.
 # 
 # 
-#  setup.cfg
+#  build-wheels.sh
 # 
-#  Created on: Oct 31, 2020
+#  Created on: Mar 22, 2021
 #       Author: Lyubov Miloserdova
 #               miloslubov@gmail.com
 #
 
-[metadata]
-name = mrob
-home-page = https://github.com/MobileRoboticsSkoltech/mrob
-maintainer = Gonzalo Ferrer
-maintainer_email = G.Ferrer@skoltech.ru
-long-description = file: README.md
-long_description_content_type = text/markdown
-license = Apache-2.0 
-license_files = LICENSE
+#!/bin/bash
+set -euo pipefail
+export LC_ALL=C
 
-[options]
-zip_safe = false
-include_package_data = true
-python_requires = >= 3.5
-packages = find:
+cd $(dirname $(greadlink -f "${BASH_SOURCE[0]}"))/..
+mkdir -p ./build ./dist ./mrob
 
-[options.package_data]
-* = 
-    *.so 
-    *.dylib
+cp ./__init__.py ./mrob/__init__.py 
 
-[sdist]
-formats = zip, gztar
+cd ./build
+
+NUMPROC=$(sysctl -n hw.ncpu)
+echo "Running $NUMPROC parallel jobs"
+
+for PYBIN in /Users/runner/hostedtoolcache/Python/3.*/x64/bin/python3.[5-9]
+do
+    cmake .. -DPYTHON_EXECUTABLE:FILEPATH=$PYBIN \
+             -DCMAKE_MACOSX_RPATH=ON \
+             -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
+             -DCMAKE_INSTALL_RPATH="@loader_path"
+    make -j $NUMPROC
+    
+    mv ../lib/* ../mrob
+done
+
+cd ../
+python3 -m pip install --user -q build
+python3 -m build --wheel --outdir dist/ .
 
