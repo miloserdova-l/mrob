@@ -187,6 +187,7 @@ workflows:
             - build
           filters: *all-tags
       - test-wheel:
+          requires:
             - build-wheel
           filters: *all-tags
       - publish-github-release:
