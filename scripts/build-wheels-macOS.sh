@@ -39,7 +39,8 @@ do
     cmake .. -DPYTHON_EXECUTABLE:FILEPATH=$PYBIN \
              -DCMAKE_MACOSX_RPATH=ON \
              -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
-             -DCMAKE_INSTALL_RPATH="@loader_path"
+             -DCMAKE_INSTALL_RPATH="@loader_path" \
+             -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9
     make -j $NUMPROC
     
     mv ../lib/* ../mrob
