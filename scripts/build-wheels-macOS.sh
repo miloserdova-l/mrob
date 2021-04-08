@@ -23,6 +23,7 @@
 #!/bin/bash
 set -euo pipefail
 export LC_ALL=C
+export MACOSX_DEPLOYMENT_TARGET=10.9
 
 cd $(dirname $(greadlink -f "${BASH_SOURCE[0]}"))/..
 mkdir -p ./build ./dist ./mrob
@@ -39,8 +40,7 @@ do
     cmake .. -DPYTHON_EXECUTABLE:FILEPATH=$PYBIN \
              -DCMAKE_MACOSX_RPATH=ON \
              -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
-             -DCMAKE_INSTALL_RPATH="@loader_path" \
-             -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9
+             -DCMAKE_INSTALL_RPATH="@loader_path" 
     make -j $NUMPROC
     
     mv ../lib/* ../mrob
